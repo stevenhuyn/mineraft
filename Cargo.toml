@@ -1,6 +1,10 @@
+[workspace]
+members = ["mineraft-core", "mineraft-tcp"]
+
 [package]
-name = "mineraft"
+name = "mineraft-node"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+mineraft-core = { path = "./mineraft-core" }
