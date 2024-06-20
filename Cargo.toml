@@ -1,18 +1,18 @@
 [workspace]
-# members = ["mineraft-client", "mineraft-core", "mineraft-tcp"]
+members = ["mob", "spawner"]
 
 [package]
-name = "mineraft-node"
+name = "root"
 version = "0.1.0"
 edition = "2021"
 
-# [[bin]]
-# name = "client"
-# path = "mineraft-client/src/main.rs"
+[[bin]]
+name = "mob"
+path = "mob/src/main.rs"
 
-# [[bin]]
-# name = "tcp"
-# path = "mineraft-tcp/src/main.rs"
+[[bin]]
+name = "spawner"
+path = "spawner/src/main.rs"
 
 
 [dependencies]
