@@ -1,19 +1,19 @@
 [workspace]
-members = ["mineraft-client", "mineraft-core", "mineraft-tcp"]
+# members = ["mineraft-client", "mineraft-core", "mineraft-tcp"]
 
 [package]
 name = "mineraft-node"
 version = "0.1.0"
 edition = "2021"
 
-[[bin]]
-name = "client"
-path = "mineraft-client/src/main.rs"
+# [[bin]]
+# name = "client"
+# path = "mineraft-client/src/main.rs"
 
-[[bin]]
-name = "tcp"
-path = "mineraft-tcp/src/main.rs"
+# [[bin]]
+# name = "tcp"
+# path = "mineraft-tcp/src/main.rs"
 
 
 [dependencies]
-mineraft-core = { path = "./mineraft-core" }
+# mineraft-core = { path = "./mineraft-core" }
