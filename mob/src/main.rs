@@ -3,6 +3,8 @@ use std::net::{TcpListener, TcpStream};
 use std::sync::mpsc;
 use std::thread;
 
+mod core;
+
 fn main() {
   // Get args
   let args: Vec<String> = std::env::args().collect();
