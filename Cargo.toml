@@ -1,19 +1,18 @@
 [workspace]
+resolver = "2"
 members = ["mob", "spawner"]
 
-[package]
-name = "root"
-version = "0.1.0"
-edition = "2021"
+[workspace.package]
+version = "0.0.1"
+authors = ["stevenhuyn"]
 
-[[bin]]
-name = "mob"
-path = "mob/src/main.rs"
+# [[bin]]
+# name = "mob"
+# path = "mob/src/main.rs"
 
-[[bin]]
-name = "spawner"
-path = "spawner/src/main.rs"
+# [[bin]]
+# name = "spawner"
+# path = "spawner/src/main.rs"
 
-
-[dependencies]
+# [dependencies]
 # mineraft-core = { path = "./mineraft-core" }

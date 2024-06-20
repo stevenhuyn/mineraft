@@ -7,9 +7,5 @@ name = "mob"
 version = "0.1.0"
 
 [[package]]
-name = "root"
-version = "0.1.0"
-
-[[package]]
 name = "spawner"
 version = "0.1.0"
