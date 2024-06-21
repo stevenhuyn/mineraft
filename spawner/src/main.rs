@@ -1,3 +1,3 @@
 fn main() {
-  println!("Hello, world!");
+  let ports = [8080, 8081, 8082];
 }
