@@ -1,12 +1,13 @@
 use std::{
-  net::TcpListener,
+  net::{TcpListener, TcpStream},
   thread::{self, JoinHandle},
+  time::Duration,
 };
 
-use crate::core::Call;
+use crate::core::{Call, RequestVote};
 
-pub fn spawn_mob(address: String, peers: Vec<String>) -> JoinHandle<()> {
-  thread::spawn(move || {
+pub fn spawn_mob(address: String, peers: Vec<String>) -> Vec<JoinHandle<()>> {
+  let receiver = thread::spawn(move || {
     let listener = TcpListener::bind(address.clone()).unwrap();
     println!("Listening on port {}...", address.clone());
 
@@ -32,5 +33,40 @@ pub fn spawn_mob(address: String, peers: Vec<String>) -> JoinHandle<()> {
         }
       }
     }
-  })
+  });
+
+  let sender = thread::spawn(move || {
+    for peer in peers {
+      let stream = match TcpStream::connect(peer) {
+        Ok(stream) => stream,
+        Err(e) => {
+          println!("Sender Error: {}", e);
+          continue;
+        }
+      };
+
+      loop {
+        // Sleep for 3 seconds
+        thread::sleep(Duration::from_secs(3));
+
+        let message = Call::RequestVote(RequestVote {
+          term: 0,
+          candidate_id: 0,
+          last_log_index: 0,
+          last_log_term: 0,
+        });
+
+        match bincode::serialize_into(&stream, &message) {
+          Ok(_) => {
+            println!("Sent message: {:?}", message);
+          }
+          Err(e) => {
+            println!("Error serializing message: {:?}", e);
+          }
+        }
+      }
+    }
+  });
+
+  vec![receiver, sender]
 }

@@ -6,7 +6,7 @@ fn main() {
   for &address in addresses.iter() {
     let peers: Vec<String> =
       addresses.iter().filter(|&&p| p != address).map(|a| a.to_string()).collect();
-    handles.push(spawn_mob(address.to_string(), peers));
+    handles.extend(spawn_mob(address.to_string(), peers));
   }
 
   for handle in handles {
