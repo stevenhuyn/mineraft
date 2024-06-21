@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Default)]
 struct PersistentState {
   pub current_term: u64,
@@ -42,13 +44,13 @@ pub enum Role {
   Leader(LeaderVolatileState),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Call {
   RequestVote(RequestVote),
   AppendEntries(AppendEntries),
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RequestVote {
   pub term: u64,
   pub candidate_id: u64,
@@ -62,7 +64,7 @@ impl RequestVote {
   }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AppendEntries {
   pub term: u64,
   pub leader_id: u64,
@@ -85,7 +87,7 @@ impl AppendEntries {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Entry;
 
 #[derive(Debug, Clone)]
