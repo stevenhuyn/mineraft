@@ -5,11 +5,3 @@ members = ["mob", "spawner"]
 [workspace.package]
 version = "0.0.1"
 authors = ["stevenhuyn"]
-
-
-# [[bin]]
-# name = "spawner"
-# path = "spawner/src/main.rs"
-
-# [dependencies]
-# mineraft-core = { path = "./mineraft-core" }
