@@ -91,19 +91,13 @@ impl AppendEntries {
 pub struct Entry;
 
 #[derive(Debug, Clone)]
-pub struct Node {
+pub struct MobState {
   persistent_state: PersistentState,
   volatile_state: VolatileState,
   role: Role,
 }
 
-impl Default for Node {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
-impl Node {
+impl MobState {
   pub fn new() -> Self {
     Self {
       persistent_state: PersistentState::new(),

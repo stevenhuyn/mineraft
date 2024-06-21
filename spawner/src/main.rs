@@ -1,12 +1,14 @@
-use mob::mob::spawn_mob;
+use mob::mob::Mob;
 
 fn main() {
   let addresses = ["127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082"];
   let mut handles = vec![];
-  for &address in addresses.iter() {
+  for (i, &address) in addresses.iter().enumerate() {
     let peers: Vec<String> =
       addresses.iter().filter(|&&p| p != address).map(|a| a.to_string()).collect();
-    handles.extend(spawn_mob(address.to_string(), peers));
+    let mob = Mob::new(i as u64, address, peers);
+    let handle = mob.spawn();
+    handles.extend(handle);
   }
 
   for handle in handles {
