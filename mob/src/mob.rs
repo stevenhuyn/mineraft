@@ -1,9 +1,12 @@
-use std::{net::TcpListener, thread};
+use std::{
+  net::TcpListener,
+  thread::{self, JoinHandle},
+};
 
 use crate::core::Call;
 
-pub fn spawn_mob(address: String, peers: Vec<String>) {
-  let listener_thread = thread::spawn(move || {
+pub fn spawn_mob(address: String, peers: Vec<String>) -> JoinHandle<()> {
+  thread::spawn(move || {
     let listener = TcpListener::bind(address.clone()).unwrap();
     println!("Listening on port {}...", address.clone());
 
@@ -29,7 +32,5 @@ pub fn spawn_mob(address: String, peers: Vec<String>) {
         }
       }
     }
-  });
-
-  listener_thread.join().unwrap();
+  })
 }
