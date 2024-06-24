@@ -50,6 +50,15 @@ pub enum Call {
   AppendEntries(AppendEntries),
 }
 
+impl Call {
+  pub fn id(&self) -> u64 {
+    match self {
+      Call::RequestVote(v) => v.candidate_id,
+      Call::AppendEntries(a) => a.leader_id,
+    }
+  }
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct RequestVote {
   pub term: u64,

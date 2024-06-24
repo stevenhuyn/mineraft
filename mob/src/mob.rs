@@ -1,6 +1,5 @@
 use std::{
   net::{TcpListener, TcpStream},
-  sync::Arc,
   thread::{self, JoinHandle},
   time::Duration,
 };
@@ -8,76 +7,85 @@ use std::{
 use crate::core::{Call, MobState, RequestVote};
 
 pub struct Mob {
-  id: u64,
-  address: &'static str,
-  peers: Vec<String>,
+  id: Identifier,
+  peers: Vec<Identifier>,
   state: MobState,
 }
 
+#[derive(Debug, Clone)]
+pub struct Identifier {
+  pub id: u64,
+  pub address: &'static str,
+}
+
+impl Identifier {
+  pub fn new(id: u64, address: &'static str) -> Self {
+    Self { id, address }
+  }
+}
+
 impl Mob {
-  pub fn new(id: u64, address: &'static str, peers: Vec<String>) -> Self {
-    Self { id, address, peers, state: MobState::new() }
+  pub fn new(id: Identifier, peers: Vec<Identifier>) -> Self {
+    Self { id, peers, state: MobState::new() }
   }
 
   pub fn spawn(&self) -> Vec<JoinHandle<()>> {
-    let receiver_address = self.address;
-    let receiver = thread::spawn(move || {
-      let listener = TcpListener::bind(receiver_address).unwrap();
-      println!("Listening on port {}...", receiver_address);
+    let receiver = thread::spawn({
+      let receiver_address = self.id.address;
+      let id = self.id.id;
+      move || {
+        let listener = TcpListener::bind(receiver_address).unwrap();
+        println!("Listening on port {}...", receiver_address);
 
-      for stream in listener.incoming() {
-        match stream {
-          Ok(stream) => {
-            println!(
-              "Accept: {:-4} -> {:-4}",
-              receiver_address.clone(),
-              stream.peer_addr().unwrap()
-            );
-            let receiver_address = receiver_address.clone();
-            thread::spawn(move || loop {
-              let message: Result<Call, _> = bincode::deserialize_from(&stream);
-              match message {
-                Ok(_message) => {
-                  println!(
-                    "Receive: {:-4} -> {:-4}",
-                    receiver_address.clone(),
-                    stream.peer_addr().unwrap()
-                  );
+        for stream in listener.incoming() {
+          match stream {
+            Ok(stream) => {
+              println!("{}: Accept {:-4}", id, stream.peer_addr().unwrap());
+              thread::spawn({
+                move || loop {
+                  let message: Result<Call, _> = bincode::deserialize_from(&stream);
+                  match message {
+                    Ok(message) => {
+                      println!("{}: Receive from {}", id, message.id())
+                    }
+                    Err(e) => {
+                      println!("Error deserializing message: {:?}", e);
+                      break;
+                    }
+                  }
                 }
-                Err(e) => {
-                  println!("Error deserializing message: {:?}", e);
-                  break;
-                }
-              }
-            });
-          }
-          Err(e) => {
-            println!("Receiver Error: {}", e);
+              });
+            }
+            Err(e) => {
+              println!("Receiver Error: {}", e);
+            }
           }
         }
       }
     });
 
-    let peers = self.peers.clone();
-    let sender_address = self.address;
-    let sender = thread::spawn(move || {
-      for peer in peers.iter() {
-        let stream = match TcpStream::connect(peer) {
-          Ok(stream) => stream,
-          Err(e) => {
-            println!("Sender Error: {}", e);
-            continue;
-          }
-        };
+    let sender = thread::spawn({
+      let peers = self.peers.clone();
+      let source_id = self.id.id;
+      move || {
+        for peer in peers.iter() {
+          let stream = match TcpStream::connect(peer.address) {
+            Ok(stream) => stream,
+            Err(e) => {
+              println!("Sender Error: {}", e);
+              continue;
+            }
+          };
 
-        Self::heartbeat(&stream, sender_address);
+          Self::heartbeat(&stream, source_id, peer.id);
+        }
       }
     });
 
     vec![receiver, sender]
   }
 
-  fn heartbeat(stream: &TcpStream, address: &str) {
+  fn heartbeat(stream: &TcpStream, source_id: u64, peer_id: u64) {
     loop {
       // Sleep for random time between 2.5 and 3.5 seconds
       let sleep_time = rand::random::<f64>() + 2.5;
@@ -85,14 +93,14 @@ impl Mob {
 
       let message = Call::RequestVote(RequestVote {
         term: 0,
-        candidate_id: 0,
+        candidate_id: source_id,
         last_log_index: 0,
         last_log_term: 0,
       });
 
       match bincode::serialize_into(stream, &message) {
         Ok(_) => {
-          println!("Send: {:-4} to {:?}", address, stream.peer_addr());
+          println!("{}: send to {}", source_id, peer_id);
         }
         Err(e) => {
           println!("Error serializing message: {:?}", e);
