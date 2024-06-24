@@ -32,33 +32,15 @@ impl Mob {
   pub fn spawn(&self) -> Vec<JoinHandle<()>> {
     let receiver = thread::spawn({
       let receiver_address = self.id.address;
-      let id = self.id.id;
+      let receiver_id = self.id.id;
       move || {
         let listener = TcpListener::bind(receiver_address).unwrap();
         println!("Listening on port {}...", receiver_address);
 
-        for stream in listener.incoming() {
-          match stream {
-            Ok(stream) => {
-              println!("{}: Accept {:-4}", id, stream.peer_addr().unwrap());
-              thread::spawn({
-                move || loop {
-                  let message: Result<Call, _> = bincode::deserialize_from(&stream);
-                  match message {
-                    Ok(message) => {
-                      println!("{}: Receive from {}", id, message.id())
-                    }
-                    Err(e) => {
-                      println!("Error deserializing message: {:?}", e);
-                      break;
-                    }
-                  }
-                }
-              });
-            }
-            Err(e) => {
-              println!("Receiver Error: {}", e);
-            }
+        for peer_stream in listener.incoming() {
+          match peer_stream {
+            Ok(peer_stream) => Self::setup_listener(peer_stream, receiver_id),
+            Err(e) => println!("Receiver Error: {}", e),
           }
         }
       }
@@ -83,6 +65,24 @@ impl Mob {
     });
 
     vec![receiver, sender]
+  }
+
+  /// Setups a listener for incoming messages from a specific peer
+  fn setup_listener(peer_stream: TcpStream, receiver_id: u64) {
+    thread::spawn({
+      move || loop {
+        let message: Result<Call, _> = bincode::deserialize_from(&peer_stream);
+        match message {
+          Ok(message) => {
+            println!("{}: Receive from {}", receiver_id, message.id())
+          }
+          Err(e) => {
+            println!("Error deserializing message: {:?}", e);
+            break;
+          }
+        }
+      }
+    });
   }
 
   fn heartbeat(stream: &TcpStream, source_id: u64, peer_id: u64) {
